@@ -20,12 +20,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── ĐƯỜNG DẪN MODEL ───
-# Đặt file resnet50_faceshape.keras của bạn vào cùng thư mục backend/
-MODEL_FILENAME = "resnet50_faceshape.keras"
-MODEL_PATH = os.path.join(os.path.dirname(__file__), MODEL_FILENAME)
+# ─── ĐƯỜNG DẪN CÁC MÔ HÌNH AI ───
+MODEL_FILES = {
+    'SVM': 'svm_faceshape.pkl',
+    'CNN': 'cnn_faceshape.keras',
+    'ResNet50': 'resnet50_faceshape.keras',
+    'EfficientNetV2': 'efficientnetv2_faceshape.keras'
+}
 
-model = None
+loaded_models = {}
 CLASS_NAMES = ['Heart', 'Oblong', 'Oval', 'Round', 'Square']
 
 RECOMMENDATIONS_MAP = {
@@ -57,19 +60,24 @@ RECOMMENDATIONS_MAP = {
 }
 
 @app.on_event("startup")
-def load_model():
-    global model
-    try:
-        if os.path.exists(MODEL_PATH):
-            print(f"Loading model from {MODEL_PATH}...")
-            import tensorflow as tf
-            model = tf.keras.models.load_model(MODEL_PATH)
-            print("Model loaded successfully!")
+def load_models():
+    global loaded_models
+    for model_name, filename in MODEL_FILES.items():
+        path = os.path.join(os.path.dirname(__file__), filename)
+        if os.path.exists(path):
+            try:
+                print(f"Loading {model_name} from {path}...")
+                if filename.endswith('.keras'):
+                    import tensorflow as tf
+                    loaded_models[model_name] = tf.keras.models.load_model(path)
+                elif filename.endswith('.pkl') or filename.endswith('.joblib'):
+                    import joblib
+                    loaded_models[model_name] = joblib.load(path)
+                print(f"Successfully loaded {model_name}!")
+            except Exception as e:
+                print(f"Error loading {model_name}: {str(e)}")
         else:
-            print(f"Warning: Model file NOT found at {MODEL_PATH}.")
-            print("Please place your 286MB 'resnet50_faceshape.keras' inside the backend/ folder.")
-    except Exception as e:
-        print(f"Error loading model: {str(e)}")
+            print(f"Info: {model_name} file not found at {path}. Will run in mock-mode if requested.")
 
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
     try:
@@ -101,15 +109,68 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
 
+import cv2
+
+# Đường dẫn đến file XML cascade cục bộ trong thư mục backend
+CASCADE_PATH = os.path.join(os.path.dirname(__file__), "haarcascade_frontalface_default.xml")
+face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
+
+def has_face(image_bytes: bytes) -> bool:
+    try:
+        # Chuyển bytes ảnh thành mảng numpy để OpenCV có thể đọc
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            print("OpenCV Error: Cannot decode image bytes.")
+            return False
+            
+        # Chuyển sang ảnh xám để tối ưu hóa nhận diện
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        
+        # Phát hiện khuôn mặt
+        faces = face_cascade.detectMultiScale(
+            gray,
+            scaleFactor=1.1,
+            minNeighbors=4,
+            minSize=(30, 30)
+        )
+        
+        print(f"Face Detection: Found {len(faces)} face(s) in image.")
+        # Nếu số lượng khuôn mặt tìm thấy > 0 thì hợp lệ
+        return len(faces) > 0
+    except Exception as e:
+        print(f"Face Detection Exception: {str(e)}")
+        return False
+
+from fastapi import Form
+
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
-    global model
+async def predict(file: UploadFile = File(...), model_name: str = Form("ResNet50")):
+    global loaded_models
     
-    # ⚠️ Trả dữ liệu giả lập (Mock) NẾU model thực tế chưa được tải
-    if model is None:
-        print("Model not loaded. Returning mock response for preview.")
-        # Trả mock giống hệt cấu trúc để frontend không bị crash
+    try:
+        # Đọc dữ liệu ảnh gửi lên
+        contents = await file.read()
+        
+        # ─── BỘ LỌC KIỂM TRA KHUÔN MẶT ───
+        if not has_face(contents):
+            raise HTTPException(
+                status_code=400,
+                detail="Không tìm thấy khuôn mặt rõ ràng nào trong ảnh! Vui lòng tải một ảnh chụp trực diện rõ mặt."
+            )
+            
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Lỗi đọc tập tin ảnh: {str(e)}")
+
+    selected_model = loaded_models.get(model_name)
+
+    # ⚠️ Trả dữ liệu giả lập (Mock) NẾU model được chọn chưa được tải
+    if selected_model is None:
+        print(f"Model {model_name} not loaded. Returning mock response for preview.")
         import random
+        # Tạo mock hợp lý theo dáng mặt
         random_shape = random.choice(CLASS_NAMES)
         mock_probs = np.random.dirichlet(np.ones(5), size=1)[0]
         
@@ -118,18 +179,31 @@ async def predict(file: UploadFile = File(...)):
             "confidence": float(max(mock_probs)),
             "probabilities": {CLASS_NAMES[i]: float(mock_probs[i]) for i in range(len(CLASS_NAMES))},
             "recommendations": RECOMMENDATIONS_MAP.get(random_shape, RECOMMENDATIONS_MAP['Oval']),
-            "best_model": "ResNet50 (Mock Mode)"
+            "best_model": f"{model_name} (Mock Mode)"
         }
     
     try:
-        # Đọc dữ liệu ảnh gửi lên
-        contents = await file.read()
-        
         # Tiền xử lý ảnh
         input_data = preprocess_image(contents)
         
-        # Dự đoán hình dáng khuôn mặt
-        predictions = model.predict(input_data)[0]
+        # Dự đoán hình dáng khuôn mặt tùy theo kiểu mô hình
+        if model_name == 'SVM':
+            # SVM thường yêu cầu dữ liệu phẳng (flat) hoặc xử lý HOG
+            # Trong trường hợp Mock/Fallback của file SVM đơn giản, ta tính xác suất qua predict_proba
+            try:
+                # Nếu mô hình SVM hỗ trợ xác suất
+                probs = selected_model.predict_proba(input_data.reshape(1, -1))[0]
+            except Exception:
+                # Fallback nếu SVM không được train với probability=True
+                probs = np.zeros(len(CLASS_NAMES))
+                pred_class = selected_model.predict(input_data.reshape(1, -1))[0]
+                idx = CLASS_NAMES.index(pred_class) if pred_class in CLASS_NAMES else 0
+                probs[idx] = 1.0
+            
+            predictions = probs
+        else:
+            # Các mô hình Keras (CNN, ResNet50, EfficientNetV2)
+            predictions = selected_model.predict(input_data)[0]
         
         # Tìm nhãn chiếm tỉ lệ phần trăm cao nhất
         max_idx = np.argmax(predictions)
@@ -147,19 +221,19 @@ async def predict(file: UploadFile = File(...)):
             "confidence": confidence,
             "probabilities": probabilities,
             "recommendations": recommendations,
-            "best_model": "ResNet50 Custom Model"
+            "best_model": f"{model_name} Custom Model"
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error running inference: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error running inference on {model_name}: {str(e)}")
 
 @app.get("/models")
 async def get_models():
-    # Cung cấp danh sách models của bạn để đồng bộ hiển thị lên Frontend
+    global loaded_models
     return [
-        {"name": "ResNet50", "accuracy": 96.8, "inference_time": "120ms", "parameters": "25.6M", "status": "Active" if model is not None else "Mocked"},
-        {"name": "EfficientNetV2", "accuracy": 95.4, "inference_time": "180ms", "parameters": "24.4M", "status": "Available"},
-        {"name": "CNN Custom", "accuracy": 89.2, "inference_time": "45ms", "parameters": "4.8M", "status": "Available"},
-        {"name": "SVM + HOG", "accuracy": 84.1, "inference_time": "15ms", "parameters": "1.2K", "status": "Available"}
+        {"name": "SVM", "method": "HOG + LinearSVC", "accuracy": 84.1, "speed": "15ms", "status": "Ready" if "SVM" in loaded_models else "Mocked"},
+        {"name": "CNN", "accuracy": 89.2, "speed": "45ms", "status": "Ready" if "CNN" in loaded_models else "Mocked"},
+        {"name": "ResNet50", "accuracy": 96.8, "speed": "120ms", "status": "Ready" if "ResNet50" in loaded_models else "Mocked"},
+        {"name": "EfficientNetV2", "accuracy": 95.4, "speed": "180ms", "status": "Ready" if "EfficientNetV2" in loaded_models else "Mocked"}
     ]
 
 if __name__ == "__main__":
