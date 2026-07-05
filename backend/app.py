@@ -113,9 +113,18 @@ import cv2
 
 # Đường dẫn đến file XML cascade cục bộ trong thư mục backend
 CASCADE_PATH = os.path.join(os.path.dirname(__file__), "haarcascade_frontalface_default.xml")
-face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
+if not os.path.exists(CASCADE_PATH):
+    print(f"Warning: OpenCV Cascade file not found at {CASCADE_PATH}. Face check will default to True to prevent crashes.")
+    face_cascade = None
+else:
+    face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
+    if face_cascade.empty():
+        print("Warning: Failed to load cascade classifier. Face check will default to True.")
+        face_cascade = None
 
 def has_face(image_bytes: bytes) -> bool:
+    if face_cascade is None:
+        return True # Fallback if file missing
     try:
         # Chuyển bytes ảnh thành mảng numpy để OpenCV có thể đọc
         nparr = np.frombuffer(image_bytes, np.uint8)
@@ -147,6 +156,7 @@ from fastapi import Form
 @app.post("/predict")
 async def predict(file: UploadFile = File(...), model_name: str = Form("ResNet50")):
     global loaded_models
+    import tensorflow as tf
     
     try:
         # Đọc dữ liệu ảnh gửi lên
@@ -225,6 +235,12 @@ async def predict(file: UploadFile = File(...), model_name: str = Form("ResNet50
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error running inference on {model_name}: {str(e)}")
+    finally:
+        # Giải phóng session bộ nhớ Keras để tránh rò rỉ RAM máy chủ
+        try:
+            tf.keras.backend.clear_session()
+        except:
+            pass
 
 @app.get("/models")
 async def get_models():
