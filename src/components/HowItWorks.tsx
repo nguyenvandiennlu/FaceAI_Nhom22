@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { Upload, Brain, ScanFace, Sparkles } from 'lucide-react'
 
 const STEPS = [
@@ -36,8 +36,8 @@ const STEPS = [
   },
 ]
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } }
-const item = {
+const container: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } }
+const item: Variants = {
   hidden: { opacity: 0, y: 32 },
   show:   { opacity: 1, y: 0, transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] } },
 }

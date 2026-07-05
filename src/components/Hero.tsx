@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 import { ArrowRight, Cpu, Zap, Target, Sparkles } from 'lucide-react'
 
 const STATS = [
@@ -8,8 +8,8 @@ const STATS = [
   { icon: Zap,    label: 'Inference',    value: '<200 ms', color: '#c084fc' },
 ]
 
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } }
-const up = {
+const stagger: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } }
+const up: Variants = {
   hidden: { opacity: 0, y: 20, transform: 'translateZ(0)' },
   show:   { opacity: 1, y: 0,  transform: 'translateZ(0)', transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
 }
