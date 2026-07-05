@@ -26,9 +26,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
  * POST /predict
  * Sends an image file to the backend and returns face shape + eyewear recommendations.
  */
-export async function predictFaceShape(imageFile: File): Promise<PredictionResponse> {
+export async function predictFaceShape(imageFile: File, modelName: string = 'ResNet50'): Promise<PredictionResponse> {
   const formData = new FormData()
   formData.append('file', imageFile)
+  formData.append('model_name', modelName)
 
   const res = await fetch(`${API_BASE_URL}/predict`, {
     method: 'POST',

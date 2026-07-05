@@ -31,6 +31,7 @@ const initialState: AppState = {
 export default function App() {
   const { t } = useTranslation()
   const [state, setState] = useState<AppState>(initialState)
+  const [selectedModel, setSelectedModel] = useState<string>('ResNet50')
   const resultsRef = useRef<HTMLDivElement>(null)
 
   // Fetch models on mount
@@ -74,14 +75,17 @@ export default function App() {
       setState((s) => ({
         ...s,
         uploadState: 'done',
-        prediction: MOCK_PREDICTION,
+        prediction: {
+          ...MOCK_PREDICTION,
+          best_model: `${selectedModel} (Mock Mode)`
+        },
       }))
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
       return
     }
 
     try {
-      const prediction: PredictionResponse = await predictFaceShape(state.imageFile)
+      const prediction: PredictionResponse = await predictFaceShape(state.imageFile, selectedModel)
       setState((s) => ({ ...s, uploadState: 'done', prediction }))
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
     } catch (err) {
@@ -114,6 +118,9 @@ export default function App() {
           uploadState={state.uploadState}
           imagePreviewUrl={state.imagePreviewUrl}
           errorMessage={state.errorMessage}
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
+          models={state.models}
           onFileSelect={handleFileSelect}
           onAnalyze={handleAnalyze}
           onReset={handleReset}

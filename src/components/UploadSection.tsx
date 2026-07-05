@@ -2,13 +2,16 @@ import { useCallback, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, X, ImageIcon, Loader2, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { UploadState } from '@/types'
+import type { UploadState, ModelInfo } from '@/types'
 import { cn } from '@/lib/utils'
 
 interface Props {
   uploadState: UploadState
   imagePreviewUrl: string | null
   errorMessage: string | null
+  selectedModel: string
+  onModelChange: (model: string) => void
+  models: ModelInfo[]
   onFileSelect: (file: File) => void
   onAnalyze: () => void
   onReset: () => void
@@ -18,6 +21,9 @@ export default function UploadSection({
   uploadState,
   imagePreviewUrl,
   errorMessage,
+  selectedModel,
+  onModelChange,
+  models,
   onFileSelect,
   onAnalyze,
   onReset,
@@ -37,6 +43,13 @@ export default function UploadSection({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f) }
 
   const isLoading = uploadState === 'uploading' || uploadState === 'analyzing'
+
+  const MODELS_LIST = [
+    { id: 'SVM', name: 'SVM', acc: '84.1%', desc: 'HOG + LinearSVC' },
+    { id: 'CNN', name: 'CNN Custom', acc: '89.2%', desc: 'Lightweight CNN' },
+    { id: 'ResNet50', name: 'ResNet50', acc: '96.8%', desc: 'Deep Transfer Learning' },
+    { id: 'EfficientNetV2', name: 'EfficientNetV2', acc: '95.4%', desc: 'State-of-the-art AI' }
+  ]
 
   return (
     <section id="upload" className="relative py-28 overflow-hidden">
@@ -98,55 +111,48 @@ export default function UploadSection({
 
                 <div className="relative">
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                    style={{ background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)' }}
+                    className={cn(
+                      'flex items-center justify-center w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-[var(--color-muted)] transition-all duration-300',
+                      isDragging && 'border-[var(--color-primary)]/30 text-[var(--color-primary)] bg-[var(--color-primary)]/[0.03] scale-105',
+                    )}
                   >
-                    <ImageIcon className="w-7 h-7 text-[var(--color-primary-light)]" aria-hidden="true" />
+                    <Upload className="w-6 h-6" />
                   </div>
-                  {isDragging && (
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="absolute -inset-2 rounded-3xl border border-[var(--color-primary)]/40 pointer-events-none"
-                    />
-                  )}
                 </div>
 
-                 <div className="text-center px-4">
-                  <p className="text-[15px] font-semibold text-[var(--color-foreground)] mb-1.5">
+                <div className="text-center">
+                  <p className="text-[15px] font-bold text-[var(--color-foreground)] mb-1">
                     {isDragging ? t('upload.drag_active') : t('upload.drag_idle')}
                   </p>
-                  <p className="text-[13px] text-[var(--color-muted)]">
-                    {t('upload.browse')}{' '}
-                    <span className="text-[var(--color-primary-light)] hover:underline">{t('upload.button_idle')}</span>
-                    {' '}— JPEG, PNG, WebP
+                  <p className="text-[13px] text-[var(--color-primary-light)] font-medium">
+                    {t('upload.browse')}
                   </p>
                 </div>
-                <p className="text-[11px] text-[var(--color-muted-2)]">
+
+                <p className="text-[11px] text-[var(--color-muted)] font-medium tracking-wide">
                   {t('upload.max_size')}
                 </p>
               </motion.div>
             ) : (
               <motion.div
                 key="preview"
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.3 }}
-                className="relative rounded-2xl overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="relative rounded-2xl border border-white/[0.08] overflow-hidden bg-black/25 flex items-center justify-center min-h-[350px]"
               >
                 <img
                   src={imagePreviewUrl}
-                  alt="Preview of uploaded face photo"
-                  className="w-full max-h-80 object-contain rounded-2xl bg-[var(--color-surface)]"
+                  alt="Face shape preview"
+                  className="max-h-[420px] w-auto object-contain select-none"
                 />
-                {!isLoading && (
+                {!isLoading && uploadState !== 'done' && (
                   <button
                     onClick={onReset}
-                    aria-label="Remove photo"
-                    className="absolute top-3 right-3 w-8 h-8 rounded-xl glass flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/10 transition-all"
+                    className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-xl bg-black/60 border border-white/[0.08] text-white hover:bg-black/80 hover:scale-105 active:scale-95 transition-all duration-200"
+                    aria-label="Remove image"
                   >
-                    <X className="w-4 h-4" aria-hidden="true" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
                 {isLoading && (
@@ -163,6 +169,68 @@ export default function UploadSection({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Model Selector dropdown (Show only before analyze is done) */}
+          {imagePreviewUrl && !isLoading && uploadState !== 'done' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 rounded-2xl bg-white/[0.01] border border-white/[0.04]"
+            >
+              <label className="block text-[11px] font-bold tracking-[0.16em] uppercase text-[var(--color-muted)] mb-3">
+                {t('model_selector.title', 'Chọn Mô Hình AI để phân tích')}
+              </label>
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                {MODELS_LIST.map((m) => {
+                  const isSelected = selectedModel === m.id
+                  const backendStatus = models.find((x) => x.name === m.id || (m.id === 'SVM' && x.name === 'SVM'))?.status
+                  const isReady = backendStatus === 'Ready'
+
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      disabled={!isReady}
+                      onClick={() => onModelChange(m.id)}
+                      className={cn(
+                        "flex flex-col items-start text-left p-3 rounded-xl border transition-all duration-200 select-none relative overflow-hidden",
+                        !isReady && "opacity-40 cursor-not-allowed border-white/[0.02] bg-white/[0.01]",
+                        isReady && isSelected && "bg-[var(--color-primary)]/[0.08] border-[var(--color-primary)]/50 shadow-[0_0_15px_rgba(99,102,241,0.15)]",
+                        isReady && !isSelected && "bg-transparent border-white/[0.04] hover:bg-white/[0.02] hover:border-white/[0.08]"
+                      )}
+                    >
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <span className={cn(
+                          "text-[13px] font-bold", 
+                          isReady && isSelected ? "text-[var(--color-primary-light)]" : "text-[var(--color-foreground)]",
+                          !isReady && "text-[var(--color-muted)]"
+                        )}>
+                          {m.name}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className={cn(
+                            "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded",
+                            isReady 
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                              : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          )}>
+                            {isReady ? t('model_selector.active', 'Active') : t('model_selector.coming_soon', 'Coming Soon')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between w-full text-[10px] text-[var(--color-muted)]">
+                        <span className="truncate max-w-[120px]">{m.desc}</span>
+                        <span>{m.acc} Acc</span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="text-[10px] text-[var(--color-muted)] leading-relaxed italic">
+                💡 {t('model_selector.note', 'Chỉ những mô hình nhãn "Active" mới sẵn sàng phân tích. Các mô hình "Đang phát triển" hiện được khóa.')}
+              </p>
+            </motion.div>
+          )}
 
           {/* Error */}
           <AnimatePresence>
