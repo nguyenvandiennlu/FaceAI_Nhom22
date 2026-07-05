@@ -22,7 +22,7 @@
 
 ## 📖 Giới thiệu dự án
 
-**FaceFit AI** là một ứng dụng web cao cấp giúp giải quyết vấn đề chọn kính phù hợp với khuôn mặt bằng trí tuệ nhân tạo. Hệ thống chụp/nhận ảnh trực diện của người dùng, tự động kiểm tra tính hợp lệ bằng bộ lọc phát hiện khuôn mặt (**OpenCV Haar Cascade**), chuẩn hóa tỷ lệ ảnh và sử dụng mạng nơ-ron tích chập **ResNet50** chạy song song để dự đoán chính xác dáng mặt.
+**FaceFit AI** là một ứng dụng web cao cấp giúp giải quyết vấn đề chọn kính phù hợp với khuôn mặt bằng trí tuệ nhân tạo. Hệ thống chụp/nhận ảnh trực diện của người dùng, tự động kiểm tra tính hợp lệ bằng bộ lọc phát hiện khuôn mặt (**OpenCV Haar Cascade**), chuẩn hóa tỷ lệ ảnh và cho phép người dùng tùy chọn 1 trong 4 mô hình học máy: **SVM (HOG), CNN Custom, ResNet50, EfficientNetV2** để chạy phân tích và dự đoán chính xác dáng mặt.
 
 Dựa trên kết quả dáng mặt, ứng dụng sẽ đề xuất ngay Top 3 dáng kính phù hợp nhất được lập trình theo nguyên lý cân bằng đối lập hình học thẩm mỹ thời trang.
 
@@ -33,7 +33,7 @@ Dựa trên kết quả dáng mặt, ứng dụng sẽ đề xuất ngay Top 3 d
 Bức ảnh tải lên sẽ đi qua chuỗi kiến trúc xử lý song song của hệ thống:
 
 ```
-[Ảnh tải lên] ──> [OpenCV Face Filter] ──> [Center Crop] ──> [ResNet50 AI Predict] ──> [Đề xuất mắt kính]
+[Ảnh tải lên] ──> [OpenCV Face Filter] ──> [Center Crop] ──> [AI Predict (Selected Model)] ──> [Đề xuất mắt kính]
 ```
 
 _Dưới đây là sơ đồ luồng dữ liệu (Sequence Diagram) chi tiết của hệ thống:_
@@ -45,10 +45,10 @@ sequenceDiagram
     participant FE as React Frontend
     participant BE as FastAPI Backend
     participant CV as OpenCV (Face Check)
-    participant TF as TensorFlow (ResNet50)
+    participant AI as AI Models (SVM / CNN / ResNet)
 
-    User->>FE: Tải ảnh chân dung lên
-    FE->>BE: Gửi yêu cầu POST /predict (Kèm ảnh & Mô hình được chọn)
+    User->>FE: Tải ảnh chân dung lên & Chọn mô hình AI
+    FE->>BE: Gửi yêu cầu POST /predict (Kèm ảnh & Tên mô hình được chọn)
     Note over BE: Đọc dữ liệu tập tin ảnh
     BE->>CV: Gọi hàm has_face(contents)
     alt Không tìm thấy khuôn mặt (Face count = 0)
@@ -58,8 +58,8 @@ sequenceDiagram
     else Tìm thấy khuôn mặt (Face count > 0)
         CV-->>BE: Trả về True
         Note over BE: Cắt ảnh vuông trung tâm & Resize (224x224)
-        BE->>TF: Đưa dữ liệu ảnh vào model.predict()
-        TF-->>BE: Trả về vector xác suất của 5 dáng mặt
+        BE->>AI: Đưa dữ liệu ảnh vào Mô hình đã chọn để dự đoán
+        AI-->>BE: Trả về vector xác suất của 5 dáng mặt
         Note over BE: Phân tích dáng mặt cao nhất & Lấy đề xuất gọng kính
         BE-->>FE: HTTP 200 OK (Kết quả dáng mặt & Top 3 kính)
         FE-->>User: Hiển thị Dashboard kết quả & Gợi ý kính trực quan
@@ -76,7 +76,7 @@ sequenceDiagram
 | **Styling**          | Vanilla CSS, Framer Motion | Hiệu ứng chuyển động (animations) sang trọng, giao diện tối mờ kính (glassmorphism). |
 | **Đa ngôn ngữ**      | i18next & react-i18next    | Chuyển đổi ngôn ngữ Tiếng Việt / Tiếng Anh tức thì toàn trang.                       |
 | **Backend API**      | FastAPI (Python)           | Server API hiệu năng cao, xử lý dữ liệu bất đồng bộ.                                 |
-| **Machine Learning** | TensorFlow 2.x, Keras      | Chạy mô hình ResNet50 phân loại dáng mặt với độ chính xác cao.                       |
+| **Machine Learning** | TensorFlow 2.x, Keras, Scikit-Learn | Hỗ trợ chạy các mô hình AI (SVM, CNN, ResNet50, EfficientNetV2). |
 | **Xử lý ảnh**        | OpenCV, Pillow             | Phát hiện khuôn mặt, crop trung tâm ảnh bảo toàn tỷ lệ quai hàm.                     |
 
 ---
@@ -89,7 +89,10 @@ FaceAI_Nhom22/
 │   ├── app.py                             # File chạy FastAPI chính, load model & predict
 │   ├── haarcascade_frontalface_default.xml # File mẫu OpenCV phát hiện khuôn mặt
 │   ├── requirements.txt                   # Danh sách thư viện Python cần cài đặt
-│   └── resnet50_faceshape.keras           # File mô hình học máy 286MB (được gitignore chặn)
+│   ├── resnet50_faceshape.keras           # File mô hình học máy ResNet50 286MB (được gitignore chặn)
+│   ├── efficientnetv2_faceshape.keras     # File mô hình EfficientNetV2 (được gitignore)
+│   ├── cnn_faceshape.keras                # File mô hình CNN Custom (được gitignore)
+│   └── svm_faceshape.pkl                  # File mô hình SVM (được gitignore)
 ├── src/                                   # --- FRONTEND (React) ---
 │   ├── components/                        # Các thành phần giao diện (Navbar, Upload, Dashboard...)
 │   ├── services/                          # File kết nối API (api.ts)
@@ -127,8 +130,9 @@ Yêu cầu máy đã cài **Python 3.9 - 3.11** và **pip**.
    ```bash
    pip install -r requirements.txt
    ```
-5. **Nạp file mô hình AI:**
-   - Hãy tải file mô hình **`resnet50_faceshape.keras`** (nặng 286MB) và đặt trực tiếp vào trong thư mục `/backend`.
+5. **Nạp các file mô hình AI:**
+   - Hãy tải các file mô hình thực tế của bạn (ví dụ: `resnet50_faceshape.keras` hoặc các file mô hình khác như `efficientnetv2_faceshape.keras`, `cnn_faceshape.keras`, `svm_faceshape.pkl`) và đặt vào trong thư mục `/backend`.
+   - Các mô hình không có file thực tế sẽ tự động chạy ở chế độ **Demo (Mock Mode)** để người dùng thử nghiệm.
 6. **Khởi chạy Backend Server:**
    ```bash
    python app.py
@@ -166,7 +170,9 @@ Yêu cầu máy đã cài **Node.js (v18+)** và **pnpm** (hoặc **npm**).
 
 - **Endpoint:** `POST /predict`
 - **Định dạng dữ liệu gửi đi:** `multipart/form-data`
-  - Tham số: `file` (File ảnh chụp trực diện khuôn mặt).
+  - Tham số:
+    - `file` (File ảnh chụp trực diện khuôn mặt).
+    - `model_name` (Tên mô hình AI được chọn: `SVM`, `CNN`, `ResNet50`, `EfficientNetV2`).
 - **Mã lỗi phản hồi:**
   - `400 Bad Request`: Khi ảnh tải lên bị lỗi hoặc không tìm thấy khuôn mặt rõ ràng (Face count = 0).
 - **Dữ liệu trả về mẫu (JSON 200 OK):**
