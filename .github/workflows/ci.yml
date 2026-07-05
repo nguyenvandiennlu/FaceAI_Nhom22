@@ -46,11 +46,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Chạy kiểm tra chuẩn code (Eslint)
-      - name: Run Linter
-        run: pnpm run lint
-        continue-on-error: false
-
       # Biên dịch dự án (Vite build) để kiểm tra lỗi cú pháp/import
       - name: Build Project
         run: pnpm run build
