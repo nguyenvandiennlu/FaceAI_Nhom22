@@ -38,9 +38,33 @@ Bức ảnh tải lên sẽ đi qua chuỗi kiến trúc xử lý song song củ
 
 _Dưới đây là sơ đồ luồng dữ liệu (Sequence Diagram) chi tiết của hệ thống:_
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/nguyenvandiennlu/FaceAI_Nhom22/main/backend/sequence_diagram.png" alt="Sequence Diagram" width="700" style="border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);" />
-</div>
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Người dùng
+    participant FE as React Frontend
+    participant BE as FastAPI Backend
+    participant CV as OpenCV (Face Check)
+    participant TF as TensorFlow (ResNet50)
+
+    User->>FE: Tải ảnh chân dung lên
+    FE->>BE: Gửi yêu cầu POST /predict (Kèm ảnh & Mô hình được chọn)
+    Note over BE: Đọc dữ liệu tập tin ảnh
+    BE->>CV: Gọi hàm has_face(contents)
+    alt Không tìm thấy khuôn mặt (Face count = 0)
+        CV-->>BE: Trả về False
+        BE-->>FE: HTTP 400 (Không tìm thấy khuôn mặt...)
+        FE-->>User: Hiển thị cảnh báo lỗi màu đỏ
+    else Tìm thấy khuôn mặt (Face count > 0)
+        CV-->>BE: Trả về True
+        Note over BE: Cắt ảnh vuông trung tâm & Resize (224x224)
+        BE->>TF: Đưa dữ liệu ảnh vào model.predict()
+        TF-->>BE: Trả về vector xác suất của 5 dáng mặt
+        Note over BE: Phân tích dáng mặt cao nhất & Lấy đề xuất gọng kính
+        BE-->>FE: HTTP 200 OK (Kết quả dáng mặt & Top 3 kính)
+        FE-->>User: Hiển thị Dashboard kết quả & Gợi ý kính trực quan
+    end
+```
 
 ---
 
