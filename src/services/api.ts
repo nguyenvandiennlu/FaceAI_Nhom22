@@ -20,6 +20,26 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>
 }
 
+// Helper to fetch with a timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 15000): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    clearTimeout(id)
+    return response
+  } catch (error: any) {
+    clearTimeout(id)
+    if (error.name === 'AbortError') {
+      throw new Error('Kết nối quá hạn (Timeout). Vui lòng kiểm tra lại server Backend.')
+    }
+    throw error
+  }
+}
+
 // ─── API Calls ─────────────────────────────────────────────────────────────────
 
 /**
@@ -31,7 +51,7 @@ export async function predictFaceShape(imageFile: File, modelName: string = 'Res
   formData.append('file', imageFile)
   formData.append('model_name', modelName)
 
-  const res = await fetch(`${API_BASE_URL}/predict`, {
+  const res = await fetchWithTimeout(`${API_BASE_URL}/predict`, {
     method: 'POST',
     body: formData,
   })
@@ -44,7 +64,7 @@ export async function predictFaceShape(imageFile: File, modelName: string = 'Res
  * Fetches metadata and accuracy stats for all available ML models.
  */
 export async function fetchModels(): Promise<ModelInfo[]> {
-  const res = await fetch(`${API_BASE_URL}/models`, {
+  const res = await fetchWithTimeout(`${API_BASE_URL}/models`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   })

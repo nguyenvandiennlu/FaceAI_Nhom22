@@ -53,6 +53,9 @@ export default function App() {
   }, [])
 
   const handleFileSelect = (file: File) => {
+    if (state.imagePreviewUrl) {
+      URL.revokeObjectURL(state.imagePreviewUrl)
+    }
     const url = URL.createObjectURL(file)
     setState((s) => ({
       ...s,
