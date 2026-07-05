@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { RadialBarChart, RadialBar, ResponsiveContainer, Cell } from 'recharts'
 import { Cpu, Award, TrendingUp, Layers } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { PredictionResponse } from '@/types'
 import { formatPercent, getConfidenceLabel } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ const FACE_TRAITS: Record<string, string[]> = {
 const TRAIT_COLORS = ['#818cf8', '#c084fc', '#22d3ee']
 
 export default function PredictionDashboard({ prediction }: Props) {
+  const { t } = useTranslation()
   const { face_shape, confidence, best_model, recommendations } = prediction
   const confPct = Math.round(confidence * 100)
   const traits = FACE_TRAITS[face_shape] ?? ['Unique proportions']
@@ -42,12 +44,14 @@ export default function PredictionDashboard({ prediction }: Props) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[var(--color-primary-light)] mb-4">Results</p>
+          <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[var(--color-primary-light)] mb-4">
+            {t('nav.upload')}
+          </p>
           <h2
             className="font-black tracking-[-0.03em] text-balance"
             style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: '1.1' }}
           >
-            Your analysis
+            {t('results.title')}
           </h2>
         </motion.div>
 
@@ -74,15 +78,17 @@ export default function PredictionDashboard({ prediction }: Props) {
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl font-black text-[var(--color-foreground)] leading-none">{confPct}%</span>
-                <span className="text-[10px] tracking-[0.15em] uppercase text-[var(--color-muted)] mt-1">confidence</span>
+                <span className="text-[10px] tracking-[0.15em] uppercase text-[var(--color-muted)] mt-1">
+                  {t('results.confidence')}
+                </span>
               </div>
             </div>
 
             <h3 className="text-gradient font-black mb-1" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)' }}>
-              {face_shape}
+              {t(`results.shapes.${face_shape}`, face_shape)}
             </h3>
             <p className="text-[13px] text-[var(--color-muted)] mb-6">
-              {getConfidenceLabel(confidence)} match
+              {getConfidenceLabel(confidence)} {t('results.match')}
             </p>
 
             {/* Traits */}
@@ -90,7 +96,7 @@ export default function PredictionDashboard({ prediction }: Props) {
               {traits.map((trait, i) => (
                 <li key={trait} className="flex items-center gap-3 text-[13px] text-[var(--color-foreground-2)]">
                   <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: TRAIT_COLORS[i % 3] }} />
-                  {trait}
+                  {t(`results.traits.${trait}`, trait)}
                 </li>
               ))}
             </ul>
@@ -110,12 +116,14 @@ export default function PredictionDashboard({ prediction }: Props) {
                   <Award className="w-5 h-5 text-[var(--color-violet-light)]" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">Best model</p>
+                  <p className="text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">
+                    {t('results.best_model')}
+                  </p>
                   <p className="text-[15px] font-semibold text-[var(--color-foreground)]">{best_model}</p>
                 </div>
               </div>
               <p className="text-[13px] text-[var(--color-muted)] leading-relaxed">
-                {best_model} produced the highest-confidence prediction among all four ensemble models.
+                {best_model} {t('results.best_model_desc')}
               </p>
             </motion.div>
 
@@ -131,14 +139,18 @@ export default function PredictionDashboard({ prediction }: Props) {
                   <TrendingUp className="w-5 h-5 text-[var(--color-cyan-light)]" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">Top frame</p>
+                  <p className="text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">
+                    {t('results.top_frame')}
+                  </p>
                   <p className="text-[15px] font-semibold text-[var(--color-foreground)]">
-                    {recommendations[0]?.frame ?? '—'}
+                    {t(`results.frames.${recommendations[0]?.frame}`, recommendations[0]?.frame ?? '—')}
                   </p>
                 </div>
               </div>
               <div className="flex items-end justify-between">
-                <p className="text-[13px] text-[var(--color-muted)]">Compatibility score</p>
+                <p className="text-[13px] text-[var(--color-muted)]">
+                  {t('results.compatibility')}
+                </p>
                 <span className="text-[2rem] font-black text-gradient-blue leading-none">
                   {recommendations[0]?.score ?? 0}
                 </span>
@@ -157,8 +169,12 @@ export default function PredictionDashboard({ prediction }: Props) {
                   <Layers className="w-5 h-5 text-[var(--color-primary-light)]" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">Frame scores</p>
-                  <p className="text-[15px] font-semibold text-[var(--color-foreground)]">All recommendations</p>
+                  <p className="text-[10px] tracking-[0.16em] uppercase text-[var(--color-muted)]">
+                    {t('results.frame_scores')}
+                  </p>
+                  <p className="text-[15px] font-semibold text-[var(--color-foreground)]">
+                    {t('results.frame_scores')}
+                  </p>
                 </div>
               </div>
 
@@ -172,7 +188,9 @@ export default function PredictionDashboard({ prediction }: Props) {
                   return (
                     <div key={rec.frame} className="space-y-1.5">
                       <div className="flex justify-between text-[13px]">
-                        <span className="font-medium text-[var(--color-foreground)]">{rec.frame}</span>
+                        <span className="font-medium text-[var(--color-foreground)]">
+                          {t(`results.frames.${rec.frame}`, rec.frame)}
+                        </span>
                         <span className="text-[var(--color-muted)]">{formatPercent(rec.score, 0)}</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-white/[0.05] overflow-hidden">
@@ -200,11 +218,11 @@ export default function PredictionDashboard({ prediction }: Props) {
           className="mt-6 flex items-center gap-2 justify-center text-[12px] text-[var(--color-muted)]"
         >
           <Cpu className="w-3.5 h-3.5" aria-hidden="true" />
-          Analysed by{' '}
+          {t('results.analysed_by')}{' '}
           <span className="text-[var(--color-primary-light)]">{best_model}</span>
           {' '}·{' '}
           <span className="text-[var(--color-primary-light)]">{formatPercent(confidence * 100, 0)}</span>
-          {' '}confidence
+          {' '}{t('results.confidence')}
         </motion.p>
       </div>
     </section>

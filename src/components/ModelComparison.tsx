@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
@@ -21,6 +22,7 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { valu
 }
 
 export default function ModelComparison({ models, bestModel }: Props) {
+  const { t } = useTranslation()
   const chartData = models.map((m) => ({ name: m.name, accuracy: m.accuracy }))
 
   return (
@@ -35,17 +37,16 @@ export default function ModelComparison({ models, bestModel }: Props) {
           className="text-center mb-16"
         >
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[var(--color-violet-light)] mb-4">
-            Intelligence
+            {t('models_sec.badge')}
           </p>
           <h2
             className="font-black tracking-[-0.03em] text-balance mb-5"
             style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: '1.1' }}
           >
-            AI model comparison
+            {t('models_sec.title')}
           </h2>
           <p className="text-[15px] text-[var(--color-muted)] max-w-lg mx-auto leading-relaxed">
-            FaceFit AI uses four state-of-the-art ML models. Each has distinct accuracy, speed,
-            and architectural trade-offs.
+            {t('models_sec.desc')}
           </p>
         </motion.div>
 
@@ -132,9 +133,9 @@ export default function ModelComparison({ models, bestModel }: Props) {
                       )}
                     </div>
                     <div className="flex flex-wrap gap-3 text-[11px] text-[var(--color-muted)]">
-                      <span>Accuracy: <span className="text-[var(--color-foreground-2)] font-medium">{formatPercent(model.accuracy)}</span></span>
-                      <span>Speed: <span className={getSpeedColor(model.speed)}>{model.speed}</span></span>
-                      <span>Status: <span className="text-emerald-400">{model.status}</span></span>
+                      <span>{t('models_sec.accuracy')}: <span className="text-[var(--color-foreground-2)] font-medium">{formatPercent(model.accuracy)}</span></span>
+                      <span>{t('models_sec.speed')}: <span className={getSpeedColor(model.speed)}>{model.speed}</span></span>
+                      <span>{t('models_sec.status')}: <span className="text-emerald-400">{model.status}</span></span>
                     </div>
                   </div>
 

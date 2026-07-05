@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, X, ImageIcon, Loader2, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { UploadState } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -21,6 +22,7 @@ export default function UploadSection({
   onAnalyze,
   onReset,
 }: Props) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -48,17 +50,16 @@ export default function UploadSection({
           className="text-center mb-12"
         >
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[var(--color-primary-light)] mb-4">
-            Get started
+            {t('nav.upload')}
           </p>
           <h2
             className="font-black tracking-[-0.03em] text-balance mb-5"
             style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: '1.1' }}
           >
-            Upload your photo
+            {t('upload.title')}
           </h2>
           <p className="text-[15px] text-[var(--color-muted)] max-w-md mx-auto leading-relaxed">
-            Use a clear, well-lit frontal photo for best results. Your image is processed privately
-            and never stored.
+            {t('upload.desc')}
           </p>
         </motion.div>
 
@@ -111,18 +112,18 @@ export default function UploadSection({
                   )}
                 </div>
 
-                <div className="text-center px-4">
+                 <div className="text-center px-4">
                   <p className="text-[15px] font-semibold text-[var(--color-foreground)] mb-1.5">
-                    {isDragging ? 'Drop your photo here' : 'Drag & drop your photo'}
+                    {isDragging ? t('upload.drag_active') : t('upload.drag_idle')}
                   </p>
                   <p className="text-[13px] text-[var(--color-muted)]">
-                    or{' '}
-                    <span className="text-[var(--color-primary-light)] hover:underline">browse files</span>
+                    {t('upload.browse')}{' '}
+                    <span className="text-[var(--color-primary-light)] hover:underline">{t('upload.button_idle')}</span>
                     {' '}— JPEG, PNG, WebP
                   </p>
                 </div>
                 <p className="text-[11px] text-[var(--color-muted-2)]">
-                  Max 10 MB · Frontal face recommended
+                  {t('upload.max_size')}
                 </p>
               </motion.div>
             ) : (
@@ -155,7 +156,7 @@ export default function UploadSection({
                       <div className="absolute inset-0 w-10 h-10 rounded-full bg-[var(--color-primary)] opacity-20 blur-lg" />
                     </div>
                     <p className="text-sm font-semibold text-[var(--color-foreground)]">
-                      {uploadState === 'uploading' ? 'Uploading…' : 'Analysing with AI…'}
+                      {uploadState === 'uploading' ? t('upload.state_uploading') : t('upload.state_analyzing')}
                     </p>
                   </div>
                 )}
@@ -190,7 +191,7 @@ export default function UploadSection({
                 className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-emerald-500/[0.09] border border-emerald-500/20"
               >
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden="true" />
-                <p className="text-[13px] text-emerald-300">Analysis complete — scroll down to see your results.</p>
+                <p className="text-[13px] text-emerald-300">{t('upload.state_success')}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -205,7 +206,7 @@ export default function UploadSection({
                 className="btn-primary flex-1 justify-center"
               >
                 <Sparkles className="w-4 h-4" aria-hidden="true" />
-                Analyse face shape
+                {t('upload.analyse_cta')}
               </motion.button>
             )}
             {(imagePreviewUrl || uploadState === 'error') && !isLoading && (
@@ -217,7 +218,7 @@ export default function UploadSection({
                 )}
               >
                 <Upload className="w-4 h-4" aria-hidden="true" />
-                {uploadState === 'done' ? 'Try another photo' : 'Reset'}
+                {uploadState === 'done' ? t('results.reset') : 'Reset'}
               </button>
             )}
           </div>

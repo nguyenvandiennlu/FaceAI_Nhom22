@@ -1,19 +1,18 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import HowItWorks from '@/components/HowItWorks'
 import UploadSection from '@/components/UploadSection'
+import PredictionDashboard from '@/components/PredictionDashboard'
+import ModelComparison from '@/components/ModelComparison'
+import RecommendationCards from '@/components/RecommendationCards'
 import Pipeline from '@/components/Pipeline'
 import CTA from '@/components/CTA'
 import type { AppState, ModelInfo, PredictionResponse } from '@/types'
 import { MOCK_MODELS, MOCK_PREDICTION } from '@/types'
 import { predictFaceShape, fetchModels } from '@/services/api'
-
-// Lazy-load chart-heavy components — Recharts only downloads when results appear
-const PredictionDashboard  = lazy(() => import('@/components/PredictionDashboard'))
-const RecommendationCards  = lazy(() => import('@/components/RecommendationCards'))
-const ModelComparison      = lazy(() => import('@/components/ModelComparison'))
 
 
 // ─── Dev flag ────────────────────────────────────────────────────────────────
@@ -30,6 +29,7 @@ const initialState: AppState = {
 }
 
 export default function App() {
+  const { t } = useTranslation()
   const [state, setState] = useState<AppState>(initialState)
   const resultsRef = useRef<HTMLDivElement>(null)
 
@@ -119,7 +119,7 @@ export default function App() {
           onReset={handleReset}
         />
 
-        {/* Results area — lazy loaded, Recharts chunk fetched on demand */}
+        {/* Results area */}
         <div ref={resultsRef}>
           <AnimatePresence>
             {state.prediction && (
@@ -130,29 +130,21 @@ export default function App() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <Suspense fallback={
-                  <div className="flex items-center justify-center py-20">
-                    <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
-                  </div>
-                }>
-                  <PredictionDashboard prediction={state.prediction} />
-                  <RecommendationCards
-                    recommendations={state.prediction.recommendations}
-                    faceShape={state.prediction.face_shape}
-                  />
-                </Suspense>
+                <PredictionDashboard prediction={state.prediction} />
+                <RecommendationCards
+                  recommendations={state.prediction.recommendations}
+                  faceShape={state.prediction.face_shape}
+                />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* ModelComparison — lazy loaded, renders below the fold */}
-        <Suspense fallback={null}>
-          <ModelComparison
-            models={state.models.length > 0 ? state.models : MOCK_MODELS}
-            bestModel={state.prediction?.best_model}
-          />
-        </Suspense>
+        {/* ModelComparison */}
+        <ModelComparison
+          models={state.models.length > 0 ? state.models : MOCK_MODELS}
+          bestModel={state.prediction?.best_model}
+        />
         <Pipeline />
         <CTA />
 
@@ -161,10 +153,10 @@ export default function App() {
       <footer className="border-t border-[var(--color-border)] py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-[var(--color-muted)]">
-            FaceFit AI — Intelligent Eyewear Recommendation System
+            {t('footer.title')}
           </p>
           <p className="text-xs text-[var(--color-muted)]">
-            Powered by SVM · CNN · ResNet50 · EfficientNetV2
+            {t('footer.tech')}
           </p>
         </div>
       </footer>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion, Variants } from 'framer-motion'
 import { ArrowRight, Cpu, Zap, Target, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const STATS = [
   { icon: Cpu,    label: 'ML models',    value: '4',       color: '#818cf8' },
@@ -79,6 +80,8 @@ export default function Hero() {
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize) }
   }, [])
 
+  const { t } = useTranslation()
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg pt-16">
       {/* Canvas mesh */}
@@ -95,7 +98,7 @@ export default function Hero() {
           <motion.div variants={up} className="flex justify-center mb-8">
             <span className="badge-glow chip text-[var(--color-primary-light)] gap-1.5">
               <Sparkles className="w-3 h-3" aria-hidden="true" />
-              AI-Powered Eyewear Intelligence
+              {t('hero.badge')}
             </span>
           </motion.div>
 
@@ -105,10 +108,8 @@ export default function Hero() {
             className="font-black tracking-[-0.04em] text-balance mb-6"
             style={{ fontSize: 'clamp(2.8rem, 7vw, 5.5rem)', lineHeight: '1.04' }}
           >
-            Find frames that{' '}
-            <span className="text-gradient">fit your face</span>
-            <br />
-            <em className="not-italic font-extralight text-[var(--color-foreground-2)]">perfectly.</em>
+            {t('hero.title')}
+            <span className="text-gradient">{t('hero.title_gradient')}</span>
           </motion.h1>
 
           {/* Sub */}
@@ -117,18 +118,17 @@ export default function Hero() {
             className="text-[var(--color-muted)] max-w-2xl mx-auto leading-relaxed mb-10"
             style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)' }}
           >
-            Upload your photo and let our ensemble of four ML models — SVM, CNN, ResNet50, and
-            EfficientNetV2 — detect your face shape and recommend the perfect eyewear frames.
+            {t('hero.desc')}
           </motion.p>
 
           {/* CTAs */}
           <motion.div variants={up} className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
             <a href="#upload" className="btn-primary group">
-              Analyze my face
+              {t('hero.cta_start')}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" aria-hidden="true" />
             </a>
             <a href="#how-it-works" className="btn-ghost">
-              See how it works
+              {t('nav.features')}
             </a>
           </motion.div>
 

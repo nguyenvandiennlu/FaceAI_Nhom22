@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, GitBranch } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function CTA() {
+  const { t } = useTranslation()
   return (
     <section className="relative py-36 overflow-hidden">
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
@@ -15,7 +17,7 @@ export default function CTA() {
           <div className="flex justify-center mb-10">
             <span className="badge-glow chip text-[var(--color-primary-light)] gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary-light)] animate-pulse" aria-hidden="true" />
-              Ready to try
+              {t('cta_sec.badge')}
             </span>
           </div>
 
@@ -23,22 +25,19 @@ export default function CTA() {
             className="font-black tracking-[-0.04em] text-balance mb-6"
             style={{ fontSize: 'clamp(2.4rem, 6vw, 5rem)', lineHeight: '1.06' }}
           >
-            Find your perfect{' '}
-            <span className="text-gradient">eyewear match</span>
-            {' '}today.
+            {t('cta_sec.title')}
           </h2>
 
           <p
             className="text-[var(--color-muted)] max-w-2xl mx-auto leading-relaxed mb-12"
             style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)' }}
           >
-            Upload a photo, let our ensemble ML models analyse your face shape, and get personalised
-            frame recommendations in under a second.
+            {t('cta_sec.desc')}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="#upload" className="btn-primary group !py-3.5 !px-7 !text-[15px]">
-              Analyse my face shape
+              {t('cta_sec.button')}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
             </a>
             <a

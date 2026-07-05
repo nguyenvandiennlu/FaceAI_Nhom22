@@ -1,40 +1,6 @@
 import { motion, Variants } from 'framer-motion'
 import { Upload, Brain, ScanFace, Sparkles } from 'lucide-react'
-
-const STEPS = [
-  {
-    num: '01',
-    icon: Upload,
-    title: 'Upload your photo',
-    body: 'Drag-and-drop or browse a clear frontal photo. JPEG, PNG, or WebP up to 10 MB.',
-    color: '#818cf8',
-    glow: 'rgba(129,140,248,0.14)',
-  },
-  {
-    num: '02',
-    icon: Brain,
-    title: 'AI analysis',
-    body: 'Four ML models — SVM with HOG, CNN, ResNet50, EfficientNetV2 — run in parallel to classify your face shape.',
-    color: '#c084fc',
-    glow: 'rgba(192,132,252,0.14)',
-  },
-  {
-    num: '03',
-    icon: ScanFace,
-    title: 'Shape detection',
-    body: 'The best-performing model classifies your face shape with a full confidence score and feature breakdown.',
-    color: '#22d3ee',
-    glow: 'rgba(34,211,238,0.11)',
-  },
-  {
-    num: '04',
-    icon: Sparkles,
-    title: 'Frame recommendations',
-    body: 'Receive personalised eyewear recommendations ranked by compatibility score with your proportions.',
-    color: '#818cf8',
-    glow: 'rgba(129,140,248,0.14)',
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 const container: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } }
 const item: Variants = {
@@ -43,6 +9,43 @@ const item: Variants = {
 }
 
 export default function HowItWorks() {
+  const { t } = useTranslation()
+
+  const STEPS = [
+    {
+      num: '01',
+      icon: Upload,
+      title: t('how_it_works.step1_title'),
+      body: t('how_it_works.step1_body'),
+      color: '#818cf8',
+      glow: 'rgba(129,140,248,0.14)',
+    },
+    {
+      num: '02',
+      icon: Brain,
+      title: t('how_it_works.step2_title'),
+      body: t('how_it_works.step2_body'),
+      color: '#c084fc',
+      glow: 'rgba(192,132,252,0.14)',
+    },
+    {
+      num: '03',
+      icon: ScanFace,
+      title: t('how_it_works.step3_title'),
+      body: t('how_it_works.step3_body'),
+      color: '#22d3ee',
+      glow: 'rgba(34,211,238,0.11)',
+    },
+    {
+      num: '04',
+      icon: Sparkles,
+      title: t('how_it_works.step4_title'),
+      body: t('how_it_works.step4_body'),
+      color: '#818cf8',
+      glow: 'rgba(129,140,248,0.14)',
+    },
+  ]
+
   return (
     <section id="how-it-works" className="relative py-32 overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-6">
@@ -55,17 +58,16 @@ export default function HowItWorks() {
           className="text-center mb-20"
         >
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[var(--color-primary-light)] mb-4">
-            Process
+            {t('how_it_works.badge')}
           </p>
           <h2
             className="font-black tracking-[-0.03em] text-balance mb-5"
             style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: '1.1' }}
           >
-            How FaceFit AI works
+            {t('how_it_works.title')}
           </h2>
           <p className="text-[15px] text-[var(--color-muted)] max-w-lg mx-auto leading-relaxed">
-            From a single photo to personalised frame recommendations in seconds — powered by a
-            production-grade ML pipeline.
+            {t('hero.desc')}
           </p>
         </motion.div>
 

@@ -1,48 +1,51 @@
 import { motion } from 'framer-motion'
 import { Image as ImageIcon, Layers, GitMerge, Cpu, Glasses, ArrowRight } from 'lucide-react'
-
-const STAGES = [
-  {
-    icon: ImageIcon, label: 'Input', sublabel: 'Image Upload',
-    desc: 'Raw JPEG/PNG face photo via drag-drop or file picker.',
-    color: '#818cf8',
-  },
-  {
-    icon: Layers, label: 'Preprocess', sublabel: 'Resize & Normalise',
-    desc: 'Face crop, 224×224 resize, pixel normalisation & HOG feature extraction.',
-    color: '#c084fc',
-  },
-  {
-    icon: GitMerge, label: 'Ensemble', sublabel: '4 Parallel Models',
-    desc: 'SVM + HOG, CNN, ResNet50, and EfficientNetV2 run concurrently.',
-    color: '#22d3ee',
-  },
-  {
-    icon: Cpu, label: 'Aggregate', sublabel: 'Best Model Selection',
-    desc: 'Confidence scores compared; highest-confidence model wins.',
-    color: '#818cf8',
-  },
-  {
-    icon: Glasses, label: 'Output', sublabel: 'Recommendations',
-    desc: 'Face shape + ranked eyewear frames with compatibility scores.',
-    color: '#c084fc',
-  },
-]
-
-const API = [
-  {
-    method: 'POST', path: '/predict',
-    desc: 'multipart/form-data → face_shape, confidence, best_model, recommendations[]',
-    color: '#22d3ee',
-  },
-  {
-    method: 'GET', path: '/models',
-    desc: 'Returns name, method, accuracy, speed, status for all four ML models.',
-    color: '#818cf8',
-  },
-]
+import { useTranslation } from 'react-i18next'
 
 export default function Pipeline() {
+  const { t } = useTranslation()
+
+  const STAGES = [
+    {
+      icon: ImageIcon, label: t('pipeline_sec.step1'), sublabel: t('pipeline_sec.step1_desc'),
+      desc: 'Raw JPEG/PNG face photo via drag-drop or file picker.',
+      color: '#818cf8',
+    },
+    {
+      icon: Layers, label: t('pipeline_sec.step2'), sublabel: t('pipeline_sec.step2_desc'),
+      desc: 'Face crop, 224×224 resize, pixel normalisation & HOG feature extraction.',
+      color: '#c084fc',
+    },
+    {
+      icon: GitMerge, label: t('pipeline_sec.step3'), sublabel: t('pipeline_sec.step3_desc'),
+      desc: 'SVM + HOG, CNN, ResNet50, and EfficientNetV2 run concurrently.',
+      color: '#22d3ee',
+    },
+    {
+      icon: Cpu, label: t('pipeline_sec.step4'), sublabel: t('pipeline_sec.step4_desc'),
+      desc: 'Confidence scores compared; highest-confidence model wins.',
+      color: '#818cf8',
+    },
+    {
+      icon: Glasses, label: t('pipeline_sec.step5'), sublabel: t('pipeline_sec.step5_desc'),
+      desc: 'Face shape + ranked eyewear frames with compatibility scores.',
+      color: '#c084fc',
+    },
+  ]
+
+  const API = [
+    {
+      method: 'POST', path: '/predict',
+      desc: 'multipart/form-data → face_shape, confidence, best_model, recommendations[]',
+      color: '#22d3ee',
+    },
+    {
+      method: 'GET', path: '/models',
+      desc: 'Returns name, method, accuracy, speed, status for all four ML models.',
+      color: '#818cf8',
+    },
+  ]
+
   return (
     <section id="pipeline" className="relative py-28 overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-6">
@@ -55,17 +58,16 @@ export default function Pipeline() {
           className="text-center mb-20"
         >
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-[var(--color-cyan-light)] mb-4">
-            Architecture
+            {t('pipeline_sec.badge')}
           </p>
           <h2
             className="font-black tracking-[-0.03em] text-balance mb-5"
             style={{ fontSize: 'clamp(2rem, 4.5vw, 3.5rem)', lineHeight: '1.1' }}
           >
-            Technical pipeline
+            {t('pipeline_sec.title')}
           </h2>
           <p className="text-[15px] text-[var(--color-muted)] max-w-lg mx-auto leading-relaxed">
-            A production-grade inference pipeline from raw image to eyewear recommendation,
-            powered by a FastAPI backend serving four ML models.
+            {t('pipeline_sec.desc')}
           </p>
         </motion.div>
 

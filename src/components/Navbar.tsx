@@ -1,16 +1,23 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Glasses, ArrowUpRight, Menu, X } from 'lucide-react'
-
-const NAV_LINKS = [
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Models',       href: '#models' },
-  { label: 'Pipeline',     href: '#pipeline' },
-]
+import { Glasses, ArrowUpRight, Menu, X, Languages } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function Navbar() {
+  const { t, i18n } = useTranslation()
   const [scrolled, setScrolled]     = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const NAV_LINKS = [
+    { label: t('nav.features'), href: '#how-it-works' },
+    { label: t('nav.models'),       href: '#models' },
+    { label: t('nav.pipeline'),     href: '#pipeline' },
+  ]
+
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === 'vi' ? 'en' : 'vi'
+    i18n.changeLanguage(nextLang)
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32)
@@ -66,26 +73,66 @@ export default function Navbar() {
           </nav>
 
           {/* ── Actions ── */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 h-9">
+            {/* Language Toggle Pill with Custom SVG Flags */}
+            <button
+              onClick={toggleLanguage}
+              className="inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-xl border border-white/[0.06] bg-white/[0.03] text-[13px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/[0.07] transition-all cursor-pointer select-none box-border"
+              title={i18n.language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+              style={{ height: '36px' }}
+            >
+              {i18n.language === 'vi' ? (
+                // Vietnam Flag SVG (Circular)
+                <svg className="w-4 h-4 rounded-full shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="50" fill="#da251d" />
+                  <path d="M50 20 L58.8 47.1 L87.1 47.1 L64.2 63.8 L73 90.9 L50 74.2 L27 90.9 L35.8 63.8 L12.9 47.1 L41.2 47.1 Z" fill="#ffff00" />
+                </svg>
+              ) : (
+                // UK Flag SVG (Circularized)
+                <svg className="w-4 h-4 rounded-full shrink-0" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <clipPath id="circle-clip">
+                    <circle cx="50" cy="50" r="50" />
+                  </clipPath>
+                  <g clipPath="url(#circle-clip)">
+                    <rect width="100" height="100" fill="#012169" />
+                    {/* White saltire */}
+                    <path d="M0 0 L100 100 M100 0 L0 100" stroke="#fff" strokeWidth="12" />
+                    {/* Red saltire */}
+                    <path d="M0 0 L100 100 M100 0 L0 100" stroke="#C8102E" strokeWidth="6" />
+                    {/* White cross */}
+                    <path d="M50 0 L50 100 M0 50 L100 50" stroke="#fff" strokeWidth="20" />
+                    {/* Red cross */}
+                    <path d="M50 0 L50 100 M0 50 L100 50" stroke="#C8102E" strokeWidth="12" />
+                  </g>
+                </svg>
+              )}
+              <span className="leading-none">{i18n.language === 'vi' ? 'VI' : 'EN'}</span>
+            </button>
+
             <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/[0.045] transition-all duration-200"
+              className="hidden sm:inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl text-[13px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/[0.045] transition-all duration-200 box-border"
+              style={{ height: '36px' }}
             >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              GitHub
+              <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+              <span className="leading-none">GitHub</span>
             </a>
+            
             <a
               href="#upload"
-              className="btn-primary !text-[13px] !py-[7px] !px-[14px]"
+              className="inline-flex items-center justify-center h-9 px-4 rounded-xl bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-[13px] font-semibold text-white transition-all duration-200 shadow-[0_0_20px_rgba(99,102,241,0.25)] hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] box-border"
+              style={{ height: '36px', lineHeight: '36px' }}
             >
-              Try it free
+              <span className="leading-none">{t('results.reset')}</span>
             </a>
+            
             <button
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/[0.045] transition-all"
+              className="md:hidden w-9 h-9 inline-flex items-center justify-center rounded-xl text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/[0.045] transition-all box-border"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Toggle menu"
+              style={{ height: '36px', width: '36px' }}
             >
               {mobileOpen ? <X className="w-[18px] h-[18px]" /> : <Menu className="w-[18px] h-[18px]" />}
             </button>
