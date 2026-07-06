@@ -30,7 +30,7 @@ MODEL_FILES = {
 
 loaded_models = {}
 CLASS_NAMES = ['Heart', 'Oblong', 'Oval', 'Round', 'Square']
-RESNET50_GDRIVE_URL = "https://docs.google.com/uc?export=download&id=1qPRw5VVpxj-wUe6_WV7IQ-v3PcsA4myS"
+RESNET50_GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1qPRw5VVpxj-wUe6_WV7IQ-v3PcsA4myS"
 
 RECOMMENDATIONS_MAP = {
     'Oval': [
@@ -64,10 +64,13 @@ def download_file_from_google_drive(url: str, destination: str):
     import requests
     import re
     print(f"Downloading model file from Google Drive to {destination}...")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     try:
         session = requests.Session()
         # Gửi request đầu tiên
-        response = session.get(url, stream=True)
+        response = session.get(url, headers=headers, stream=True)
         
         # Tìm token xác nhận trong cookies hoặc HTML nội dung
         token = None
@@ -77,19 +80,17 @@ def download_file_from_google_drive(url: str, destination: str):
                 break
                 
         if not token:
-            # Tìm trong nội dung HTML nếu không có trong cookie
             html_content = response.text
             match = re.search(r'confirm=([0-9A-Za-z_]+)', html_content)
             if match:
                 token = match.group(1)
         
         if token:
-            # Gửi request thứ 2 kèm mã confirm để tải file thực tế
             confirm_url = url + f"&confirm={token}"
-            response = session.get(confirm_url, stream=True)
+            print(f"Token found: {token}. Re-requesting direct download...")
+            response = session.get(confirm_url, headers=headers, stream=True)
         else:
-            # Nếu không cần confirm (file nhỏ), gửi lại request stream
-            response = session.get(url, stream=True)
+            print("No warning token required. Tải trực tiếp...")
 
         # Ghi file nhị phân theo từng chunk
         with open(destination, "wb") as f:
@@ -97,7 +98,6 @@ def download_file_from_google_drive(url: str, destination: str):
                 if chunk:
                     f.write(chunk)
         
-        # Kiểm tra kích thước file tải về (phải lớn hơn 10MB)
         file_size = os.path.getsize(destination)
         print(f"Model downloaded! Size: {file_size / (1024*1024):.2f} MB")
         if file_size < 10 * 1024 * 1024:
