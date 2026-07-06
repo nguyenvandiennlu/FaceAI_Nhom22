@@ -62,27 +62,47 @@ RECOMMENDATIONS_MAP = {
 
 def download_file_from_google_drive(url: str, destination: str):
     import requests
+    import re
     print(f"Downloading model file from Google Drive to {destination}...")
     try:
         session = requests.Session()
-        # Gửi request đầu tiên để lấy mã xác nhận confirm nếu file dung lượng lớn
+        # Gửi request đầu tiên
         response = session.get(url, stream=True)
+        
+        # Tìm token xác nhận trong cookies hoặc HTML nội dung
         token = None
         for key, value in response.cookies.items():
             if key.startswith('download_warning'):
                 token = value
                 break
-
+                
+        if not token:
+            # Tìm trong nội dung HTML nếu không có trong cookie
+            html_content = response.text
+            match = re.search(r'confirm=([0-9A-Za-z_]+)', html_content)
+            if match:
+                token = match.group(1)
+        
         if token:
-            url = url + f"&confirm={token}"
+            # Gửi request thứ 2 kèm mã confirm để tải file thực tế
+            confirm_url = url + f"&confirm={token}"
+            response = session.get(confirm_url, stream=True)
+        else:
+            # Nếu không cần confirm (file nhỏ), gửi lại request stream
             response = session.get(url, stream=True)
 
-        # Ghi file theo từng chunk để tối ưu RAM
+        # Ghi file nhị phân theo từng chunk
         with open(destination, "wb") as f:
-            for chunk in response.iter_content(32768):
+            for chunk in response.iter_content(chunk_size=1024*1024): # 1MB chunk
                 if chunk:
                     f.write(chunk)
-        print("Model downloaded successfully!")
+        
+        # Kiểm tra kích thước file tải về (phải lớn hơn 10MB)
+        file_size = os.path.getsize(destination)
+        print(f"Model downloaded! Size: {file_size / (1024*1024):.2f} MB")
+        if file_size < 10 * 1024 * 1024:
+            raise Exception("Downloaded file is too small. It might be an HTML error page.")
+            
     except Exception as e:
         print(f"Failed to download model from Google Drive: {str(e)}")
         if os.path.exists(destination):
