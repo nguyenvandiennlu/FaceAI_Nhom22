@@ -30,6 +30,7 @@ MODEL_FILES = {
 
 loaded_models = {}
 CLASS_NAMES = ['Heart', 'Oblong', 'Oval', 'Round', 'Square']
+RESNET50_GDRIVE_URL = "https://docs.google.com/uc?export=download&id=1qPRw5VVpxj-wUe6_WV7IQ-v3PcsA4myS"
 
 RECOMMENDATIONS_MAP = {
     'Oval': [
@@ -59,9 +60,43 @@ RECOMMENDATIONS_MAP = {
     ]
 }
 
+def download_file_from_google_drive(url: str, destination: str):
+    import requests
+    print(f"Downloading model file from Google Drive to {destination}...")
+    try:
+        session = requests.Session()
+        # Gửi request đầu tiên để lấy mã xác nhận confirm nếu file dung lượng lớn
+        response = session.get(url, stream=True)
+        token = None
+        for key, value in response.cookies.items():
+            if key.startswith('download_warning'):
+                token = value
+                break
+
+        if token:
+            url = url + f"&confirm={token}"
+            response = session.get(url, stream=True)
+
+        # Ghi file theo từng chunk để tối ưu RAM
+        with open(destination, "wb") as f:
+            for chunk in response.iter_content(32768):
+                if chunk:
+                    f.write(chunk)
+        print("Model downloaded successfully!")
+    except Exception as e:
+        print(f"Failed to download model from Google Drive: {str(e)}")
+        if os.path.exists(destination):
+            os.remove(destination)
+
 @app.on_event("startup")
 def load_models():
     global loaded_models
+    
+    # ─── TỰ ĐỘNG TẢI FILE MÔ HÌNH RESNET50 ───
+    resnet_path = os.path.join(os.path.dirname(__file__), MODEL_FILES['ResNet50'])
+    if not os.path.exists(resnet_path):
+        download_file_from_google_drive(RESNET50_GDRIVE_URL, resnet_path)
+
     for model_name, filename in MODEL_FILES.items():
         path = os.path.join(os.path.dirname(__file__), filename)
         if os.path.exists(path):
