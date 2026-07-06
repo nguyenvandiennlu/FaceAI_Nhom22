@@ -30,7 +30,8 @@ MODEL_FILES = {
 
 loaded_models = {}
 CLASS_NAMES = ['Heart', 'Oblong', 'Oval', 'Round', 'Square']
-RESNET50_GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1qPRw5VVpxj-wUe6_WV7IQ-v3PcsA4myS"
+# Đường dẫn tải trực tiếp từ Dropbox (đã đổi dl=0 thành dl=1)
+RESNET50_DROPBOX_URL = "https://www.dropbox.com/scl/fi/29o14e4npnyl89422rlh7/resnet50_faceshape.keras?rlkey=aes0k8lzpehwwnyfftzb26qxh&st=v7qcicca&dl=1"
 
 RECOMMENDATIONS_MAP = {
     'Oval': [
@@ -60,37 +61,13 @@ RECOMMENDATIONS_MAP = {
     ]
 }
 
-def download_file_from_google_drive(url: str, destination: str):
+def download_file_from_dropbox(url: str, destination: str):
     import requests
-    import re
-    print(f"Downloading model file from Google Drive to {destination}...")
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
+    print(f"Downloading model file from Dropbox to {destination}...")
     try:
-        session = requests.Session()
-        # Gửi request đầu tiên
-        response = session.get(url, headers=headers, stream=True)
-        
-        # Tìm token xác nhận trong cookies hoặc HTML nội dung
-        token = None
-        for key, value in response.cookies.items():
-            if key.startswith('download_warning'):
-                token = value
-                break
-                
-        if not token:
-            html_content = response.text
-            match = re.search(r'confirm=([0-9A-Za-z_]+)', html_content)
-            if match:
-                token = match.group(1)
-        
-        if token:
-            confirm_url = url + f"&confirm={token}"
-            print(f"Token found: {token}. Re-requesting direct download...")
-            response = session.get(confirm_url, headers=headers, stream=True)
-        else:
-            print("No warning token required. Tải trực tiếp...")
+        # Gửi request tải trực tiếp file nhị phân từ Dropbox
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
 
         # Ghi file nhị phân theo từng chunk
         with open(destination, "wb") as f:
@@ -101,10 +78,10 @@ def download_file_from_google_drive(url: str, destination: str):
         file_size = os.path.getsize(destination)
         print(f"Model downloaded! Size: {file_size / (1024*1024):.2f} MB")
         if file_size < 10 * 1024 * 1024:
-            raise Exception("Downloaded file is too small. It might be an HTML error page.")
+            raise Exception("Downloaded file is too small. Dropbox link might be invalid.")
             
     except Exception as e:
-        print(f"Failed to download model from Google Drive: {str(e)}")
+        print(f"Failed to download model from Dropbox: {str(e)}")
         if os.path.exists(destination):
             os.remove(destination)
 
@@ -115,7 +92,7 @@ def load_models():
     # ─── TỰ ĐỘNG TẢI FILE MÔ HÌNH RESNET50 ───
     resnet_path = os.path.join(os.path.dirname(__file__), MODEL_FILES['ResNet50'])
     if not os.path.exists(resnet_path):
-        download_file_from_google_drive(RESNET50_GDRIVE_URL, resnet_path)
+        download_file_from_dropbox(RESNET50_DROPBOX_URL, resnet_path)
 
     for model_name, filename in MODEL_FILES.items():
         path = os.path.join(os.path.dirname(__file__), filename)
