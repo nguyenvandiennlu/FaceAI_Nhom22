@@ -1,12 +1,6 @@
 import io
 import os
 import numpy as np
-
-# ─── ÉP GIỚI HẠN TÀI NGUYÊN TENSORFLOW TRÁNH SẬP RAM 512MB ───
-os.environ['TF_NUM_INTEROP_THREADS'] = '1'
-os.environ['TF_NUM_INTRAOP_THREADS'] = '1'
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
@@ -20,8 +14,8 @@ app = FastAPI(
 # Cho phép React Frontend kết nối tới (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Cho phép tất cả các tên miền kết nối
-    allow_credentials=False, # Tắt credentials để cho phép wildcard * hoạt động an toàn
+    allow_origins=["*"],  # Bạn có thể đổi thành ["http://localhost:5173"] ở môi trường thực tế
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -36,8 +30,6 @@ MODEL_FILES = {
 
 loaded_models = {}
 CLASS_NAMES = ['Heart', 'Oblong', 'Oval', 'Round', 'Square']
-# Đường dẫn tải trực tiếp từ Dropbox (đã đổi dl=0 thành dl=1)
-RESNET50_DROPBOX_URL = "https://www.dropbox.com/scl/fi/29o14e4npnyl89422rlh7/resnet50_faceshape.keras?rlkey=aes0k8lzpehwwnyfftzb26qxh&st=v7qcicca&dl=1"
 
 RECOMMENDATIONS_MAP = {
     'Oval': [
@@ -67,39 +59,9 @@ RECOMMENDATIONS_MAP = {
     ]
 }
 
-def download_file_from_dropbox(url: str, destination: str):
-    import requests
-    print(f"Downloading model file from Dropbox to {destination}...")
-    try:
-        # Gửi request tải trực tiếp file nhị phân từ Dropbox
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-
-        # Ghi file nhị phân theo từng chunk
-        with open(destination, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024*1024): # 1MB chunk
-                if chunk:
-                    f.write(chunk)
-        
-        file_size = os.path.getsize(destination)
-        print(f"Model downloaded! Size: {file_size / (1024*1024):.2f} MB")
-        if file_size < 10 * 1024 * 1024:
-            raise Exception("Downloaded file is too small. Dropbox link might be invalid.")
-            
-    except Exception as e:
-        print(f"Failed to download model from Dropbox: {str(e)}")
-        if os.path.exists(destination):
-            os.remove(destination)
-
 @app.on_event("startup")
 def load_models():
     global loaded_models
-    
-    # ─── TỰ ĐỘNG TẢI FILE MÔ HÌNH RESNET50 ───
-    resnet_path = os.path.join(os.path.dirname(__file__), MODEL_FILES['ResNet50'])
-    if not os.path.exists(resnet_path):
-        download_file_from_dropbox(RESNET50_DROPBOX_URL, resnet_path)
-
     for model_name, filename in MODEL_FILES.items():
         path = os.path.join(os.path.dirname(__file__), filename)
         if os.path.exists(path):
@@ -147,27 +109,13 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
 
+import cv2
+
 # Đường dẫn đến file XML cascade cục bộ trong thư mục backend
 CASCADE_PATH = os.path.join(os.path.dirname(__file__), "haarcascade_frontalface_default.xml")
-face_cascade = None
-
-import cv2
-if hasattr(cv2, 'CascadeClassifier') and os.path.exists(CASCADE_PATH):
-    try:
-        face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
-        if face_cascade.empty():
-            print("Warning: Failed to load cascade classifier. Face check will default to True.")
-            face_cascade = None
-    except Exception as e:
-        print(f"Warning: Error initializing CascadeClassifier: {str(e)}")
-        face_cascade = None
-else:
-    print("Warning: cv2 has no 'CascadeClassifier' attribute or XML missing. Face check disabled.")
+face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
 
 def has_face(image_bytes: bytes) -> bool:
-    if face_cascade is None:
-        print("Face Check Bypass: OpenCV CascadeClassifier not active.")
-        return True # Fallback if file missing or cv2 incomplete
     try:
         # Chuyển bytes ảnh thành mảng numpy để OpenCV có thể đọc
         nparr = np.frombuffer(image_bytes, np.uint8)
@@ -199,7 +147,6 @@ from fastapi import Form
 @app.post("/predict")
 async def predict(file: UploadFile = File(...), model_name: str = Form("ResNet50")):
     global loaded_models
-    import tensorflow as tf
     
     try:
         # Đọc dữ liệu ảnh gửi lên
@@ -278,12 +225,6 @@ async def predict(file: UploadFile = File(...), model_name: str = Form("ResNet50
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error running inference on {model_name}: {str(e)}")
-    finally:
-        # Giải phóng session bộ nhớ Keras để tránh rò rỉ RAM máy chủ
-        try:
-            tf.keras.backend.clear_session()
-        except:
-            pass
 
 @app.get("/models")
 async def get_models():
