@@ -109,22 +109,27 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
 
-import cv2
-
 # Đường dẫn đến file XML cascade cục bộ trong thư mục backend
 CASCADE_PATH = os.path.join(os.path.dirname(__file__), "haarcascade_frontalface_default.xml")
-if not os.path.exists(CASCADE_PATH):
-    print(f"Warning: OpenCV Cascade file not found at {CASCADE_PATH}. Face check will default to True to prevent crashes.")
-    face_cascade = None
-else:
-    face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
-    if face_cascade.empty():
-        print("Warning: Failed to load cascade classifier. Face check will default to True.")
+face_cascade = None
+
+import cv2
+if hasattr(cv2, 'CascadeClassifier') and os.path.exists(CASCADE_PATH):
+    try:
+        face_cascade = cv2.CascadeClassifier(CASCADE_PATH)
+        if face_cascade.empty():
+            print("Warning: Failed to load cascade classifier. Face check will default to True.")
+            face_cascade = None
+    except Exception as e:
+        print(f"Warning: Error initializing CascadeClassifier: {str(e)}")
         face_cascade = None
+else:
+    print("Warning: cv2 has no 'CascadeClassifier' attribute or XML missing. Face check disabled.")
 
 def has_face(image_bytes: bytes) -> bool:
     if face_cascade is None:
-        return True # Fallback if file missing
+        print("Face Check Bypass: OpenCV CascadeClassifier not active.")
+        return True # Fallback if file missing or cv2 incomplete
     try:
         # Chuyển bytes ảnh thành mảng numpy để OpenCV có thể đọc
         nparr = np.frombuffer(image_bytes, np.uint8)
