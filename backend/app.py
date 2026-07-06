@@ -1,6 +1,12 @@
 import io
 import os
 import numpy as np
+
+# ─── ÉP GIỚI HẠN TÀI NGUYÊN TENSORFLOW TRÁNH SẬP RAM 512MB ───
+os.environ['TF_NUM_INTEROP_THREADS'] = '1'
+os.environ['TF_NUM_INTRAOP_THREADS'] = '1'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
