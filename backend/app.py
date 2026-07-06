@@ -20,8 +20,8 @@ app = FastAPI(
 # Cho phép React Frontend kết nối tới (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Bạn có thể đổi thành ["http://localhost:5173"] ở môi trường thực tế
-    allow_credentials=True,
+    allow_origins=["*"],  # Cho phép tất cả các tên miền kết nối
+    allow_credentials=False, # Tắt credentials để cho phép wildcard * hoạt động an toàn
     allow_methods=["*"],
     allow_headers=["*"],
 )
