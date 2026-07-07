@@ -32,6 +32,7 @@ export default function App() {
   const { t } = useTranslation()
   const [state, setState] = useState<AppState>(initialState)
   const [selectedModel, setSelectedModel] = useState<string>('ResNet50')
+  const [selectedGlass, setSelectedGlass] = useState<string | null>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   // Fetch models on mount
@@ -52,6 +53,16 @@ export default function App() {
     loadModels()
   }, [])
 
+  // Auto scroll to results when prediction is done
+  useEffect(() => {
+    if (state.prediction && resultsRef.current) {
+      if (state.prediction.recommendations?.length > 0) {
+        setSelectedGlass(state.prediction.recommendations[0].frame)
+      }
+      resultsRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [state.prediction])
+
   const handleFileSelect = (file: File) => {
     if (state.imagePreviewUrl) {
       URL.revokeObjectURL(state.imagePreviewUrl)
@@ -65,6 +76,7 @@ export default function App() {
       prediction: null,
       errorMessage: null,
     }))
+    setSelectedGlass(null)
   }
 
   const handleAnalyze = async () => {
@@ -83,14 +95,12 @@ export default function App() {
           best_model: `${selectedModel} (Mock Mode)`
         },
       }))
-      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
       return
     }
 
     try {
       const prediction: PredictionResponse = await predictFaceShape(state.imageFile, selectedModel)
       setState((s) => ({ ...s, uploadState: 'done', prediction }))
-      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
       setState((s) => ({ ...s, uploadState: 'error', errorMessage: message }))
@@ -107,6 +117,7 @@ export default function App() {
       prediction: null,
       errorMessage: null,
     }))
+    setSelectedGlass(null)
   }
 
   return (
@@ -127,6 +138,8 @@ export default function App() {
           onFileSelect={handleFileSelect}
           onAnalyze={handleAnalyze}
           onReset={handleReset}
+          selectedGlass={selectedGlass}
+          onGlassChange={setSelectedGlass}
         />
 
         {/* Results area */}
@@ -144,6 +157,8 @@ export default function App() {
                 <RecommendationCards
                   recommendations={state.prediction.recommendations}
                   faceShape={state.prediction.face_shape}
+                  selectedGlass={selectedGlass}
+                  onGlassSelect={setSelectedGlass}
                 />
               </motion.div>
             )}

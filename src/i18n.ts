@@ -40,6 +40,7 @@ const resources = {
         title: 'Your analysis report',
         confidence: 'confidence',
         match: 'match',
+        trying_on: 'Trying On',
         best_model: 'Best model',
         best_model_desc: 'produced the highest-confidence prediction among all four ensemble models.',
         top_frame: 'Top frame',
@@ -49,6 +50,8 @@ const resources = {
         recs_desc: 'These frames are ranked by how well they balance your facial structure.',
         reset: 'Analyze another photo',
         analysed_by: 'Analysed by',
+        export_pdf: 'Export PDF Report',
+        exporting_pdf: 'Generating PDF...',
         traits: {
           'Equal width and length': 'Equal width and length',
           'Soft jawline': 'Soft jawline',
@@ -194,6 +197,7 @@ const resources = {
         title: 'Báo cáo phân tích của bạn',
         confidence: 'độ tự tin',
         match: 'phù hợp',
+        trying_on: 'Đang Đeo Thử',
         best_model: 'Mô hình tốt nhất',
         best_model_desc: 'cho ra kết quả dự đoán với độ tin cậy cao nhất trong số cả 4 mô hình.',
         top_frame: 'Dáng kính hợp nhất',
@@ -203,6 +207,8 @@ const resources = {
         recs_desc: 'Các dáng kính dưới đây được xếp hạng dựa trên mức độ cân bằng với cấu trúc mặt của bạn.',
         reset: 'Phân tích ảnh khác',
         analysed_by: 'Phân tích bởi',
+        export_pdf: 'Tải Báo Cáo PDF',
+        exporting_pdf: 'Đang tạo báo cáo...',
         traits: {
           'Equal width and length': 'Chiều rộng và dài bằng nhau',
           'Soft jawline': 'Đường quai hàm mềm mại',
@@ -222,10 +228,10 @@ const resources = {
         },
         shapes: {
           'Oval': 'Trái xoan',
-          'Round': 'Mặt tròn',
-          'Square': 'Khuôn chữ điền',
-          'Heart': 'Mặt trái tim',
-          'Oblong': 'Khuôn mặt dài',
+          'Round': 'Tròn',
+          'Square': 'Vuông',
+          'Heart': 'Tim',
+          'Oblong': 'Dài',
         },
         frames: {
           'Rectangle': 'Kính Chữ Nhật',

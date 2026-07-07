@@ -1,44 +1,37 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Background rounded square with dark gradient -->
-  <rect width="180" height="180" rx="40" fill="#05050d"/>
-  <rect width="180" height="180" rx="40" fill="url(#bgGrad)" opacity="0.9"/>
+  <rect width="180" height="180" rx="40" fill="#090d16"/>
+  <rect width="180" height="180" rx="40" fill="url(#bgGrad)" opacity="0.9" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
 
-  <!-- Subtle grid lines -->
-  <line x1="0" y1="90" x2="180" y2="90" stroke="#6366f1" stroke-width="0.4" opacity="0.15"/>
-  <line x1="90" y1="0" x2="90" y2="180" stroke="#6366f1" stroke-width="0.4" opacity="0.15"/>
+  <!-- Subtle glow orb behind glasses -->
+  <circle cx="90" cy="90" r="60" fill="url(#glowGrad)" opacity="0.3"/>
 
-  <!-- Glow orb behind glasses -->
-  <circle cx="90" cy="90" r="52" fill="url(#glowGrad)" opacity="0.25"/>
+  <!-- Biometric HUD Scan Brackets -->
+  <path d="M42 67 C38 72, 38 78, 38 90 C38 102, 38 108, 42 113" stroke="#818cf8" stroke-width="7" stroke-linecap="round" opacity="0.75" />
+  <path d="M138 67 C142 72, 142 78, 142 90 C142 102, 142 108, 138 113" stroke="#818cf8" stroke-width="7" stroke-linecap="round" opacity="0.75" />
+  <path d="M76 46 C81 43, 86 43, 90 43 C94 43, 99 43, 104 46" stroke="#818cf8" stroke-width="7" stroke-linecap="round" opacity="0.75" />
 
-  <!-- Glasses icon centered -->
-  <!-- Left lens -->
-  <rect x="22" y="72" width="54" height="38" rx="19" fill="none" stroke="url(#lensGrad)" stroke-width="7"/>
-  <!-- Right lens -->
-  <rect x="104" y="72" width="54" height="38" rx="19" fill="none" stroke="url(#lensGrad)" stroke-width="7"/>
-  <!-- Bridge -->
-  <path d="M76 91 Q90 83 104 91" stroke="url(#lensGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <!-- Left temple -->
-  <path d="M22 91 L8 82" stroke="url(#lensGrad)" stroke-width="6" stroke-linecap="round"/>
-  <!-- Right temple -->
-  <path d="M158 91 L172 82" stroke="url(#lensGrad)" stroke-width="6" stroke-linecap="round"/>
-
-  <!-- Inner lens shine dots -->
-  <circle cx="49" cy="85" r="3.5" fill="white" opacity="0.3"/>
-  <circle cx="131" cy="85" r="3.5" fill="white" opacity="0.3"/>
+  <!-- Glasses shape centered -->
+  <!-- Left temple connector -->
+  <path d="M52 84 Q68 76 82 85" stroke="#22d3ee" stroke-width="8" stroke-linecap="round" />
+  <!-- Right temple connector -->
+  <path d="M128 84 Q112 76 98 85" stroke="#22d3ee" stroke-width="8" stroke-linecap="round" />
+  
+  <!-- Left rim -->
+  <rect x="47" y="85" width="34" height="26" rx="8" stroke="#ffffff" stroke-width="7" fill="none" />
+  <!-- Right rim -->
+  <rect x="99" y="85" width="34" height="26" rx="8" stroke="#ffffff" stroke-width="7" fill="none" />
+  <!-- Nose bridge -->
+  <path d="M81 97 Q90 91 99 97" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round" />
 
   <defs>
     <linearGradient id="bgGrad" x1="0" y1="0" x2="180" y2="180" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0f0f22"/>
-      <stop offset="100%" stop-color="#05050d"/>
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#090d16"/>
     </linearGradient>
     <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="lensGrad" x1="22" y1="72" x2="158" y2="110" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#818cf8"/>
-      <stop offset="50%" stop-color="#c084fc"/>
-      <stop offset="100%" stop-color="#22d3ee"/>
-    </linearGradient>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 </svg>

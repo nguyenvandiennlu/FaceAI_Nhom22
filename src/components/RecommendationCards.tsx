@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next'
 import type { FrameRecommendation } from '@/types'
 import { FRAME_DETAILS } from '@/types'
 
-interface Props { recommendations: FrameRecommendation[]; faceShape: string }
+interface Props { 
+  recommendations: FrameRecommendation[]
+  faceShape: string
+  selectedGlass: string | null
+  onGlassSelect: (glass: string | null) => void
+}
 
 const RANKS = ['Best match', 'Great match', 'Good match']
 const PALETTES = [
@@ -13,7 +18,7 @@ const PALETTES = [
   { color: '#22d3ee', bg: 'rgba(34,211,238,0.09)',  border: 'rgba(34,211,238,0.25)'  },
 ]
 
-export default function RecommendationCards({ recommendations, faceShape }: Props) {
+export default function RecommendationCards({ recommendations, faceShape, selectedGlass, onGlassSelect }: Props) {
   const { t } = useTranslation()
   return (
     <section className="py-16">
@@ -46,6 +51,7 @@ export default function RecommendationCards({ recommendations, faceShape }: Prop
             const details = FRAME_DETAILS[rec.frame]
             const pal = PALETTES[idx % PALETTES.length]
             const label = RANKS[idx] ?? 'Match'
+            const isTryingOn = selectedGlass === rec.frame
 
             return (
               <motion.article
@@ -53,16 +59,19 @@ export default function RecommendationCards({ recommendations, faceShape }: Prop
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
+                onClick={() => onGlassSelect(isTryingOn ? null : rec.frame)}
                 transition={{ delay: idx * 0.1, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                className="glass-card rounded-2xl overflow-hidden flex flex-col"
-                style={{ borderColor: pal.border }}
+                className={`glass-card rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] select-none ${
+                  isTryingOn ? 'ring-2 ring-[var(--color-primary)] ring-offset-2 ring-offset-black shadow-[0_0_25px_rgba(99,102,241,0.25)]' : 'hover:border-white/20'
+                }`}
+                style={{ borderColor: isTryingOn ? 'var(--color-primary)' : pal.border }}
               >
                 {/* Score band */}
-                <div className="px-6 py-4 flex items-center justify-between" style={{ background: pal.bg }}>
+                <div className="px-6 py-4 flex items-center justify-between" style={{ background: isTryingOn ? 'rgba(99,102,241,0.15)' : pal.bg }}>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" style={{ color: pal.color }} aria-hidden="true" />
-                    <span className="text-[10px] font-bold tracking-[0.16em] uppercase" style={{ color: pal.color }}>
-                      {t(`results.ranks.${label}`, label)}
+                    <CheckCircle2 className="w-4 h-4" style={{ color: isTryingOn ? 'var(--color-primary-light)' : pal.color }} aria-hidden="true" />
+                    <span className="text-[10px] font-bold tracking-[0.16em] uppercase" style={{ color: isTryingOn ? 'var(--color-primary-light)' : pal.color }}>
+                      {isTryingOn ? t('results.trying_on', '🎯 Đang Đeo Thử') : t(`results.ranks.${label}`, label)}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">

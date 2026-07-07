@@ -48,11 +48,21 @@ export default function Navbar() {
             className="flex items-center gap-2.5 group"
             onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'instant' }) }}
           >
-            <div className="relative w-8 h-8">
+            <div className="relative w-8 h-8 flex items-center justify-center">
               <div className="absolute inset-0 rounded-xl bg-[var(--color-primary)] opacity-30 blur-lg group-hover:opacity-60 transition-opacity duration-300" />
-              <div className="relative w-8 h-8 rounded-xl bg-[var(--color-surface-3)] border border-[var(--color-border-bright)] flex items-center justify-center">
-                <Glasses className="w-[17px] h-[17px] text-[var(--color-primary-light)]" />
-              </div>
+              {/* Custom SVG Biometric Eyewear Logo */}
+              <svg className="w-8 h-8 text-[var(--color-primary-light)] relative z-10" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* HUD Scan Brackets */}
+                <path d="M22 35 C20 38, 20 42, 20 50 C20 58, 20 62, 22 65" stroke="currentColor" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+                <path d="M78 35 C80 38, 80 42, 80 50 C80 58, 80 62, 78 65" stroke="currentColor" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+                <path d="M42 22 C45 20, 48 20, 50 20 C52 20, 55 20, 58 22" stroke="currentColor" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+                {/* Glasses shape */}
+                <path d="M28 46 Q38 42 46 47" stroke="#22d3ee" strokeWidth="6.5" strokeLinecap="round" />
+                <path d="M72 46 Q62 42 54 47" stroke="#22d3ee" strokeWidth="6.5" strokeLinecap="round" />
+                <rect x="25" y="47" width="20" height="15" rx="5" stroke="#ffffff" strokeWidth="5.5" fill="none" />
+                <rect x="55" y="47" width="20" height="15" rx="5" stroke="#ffffff" strokeWidth="5.5" fill="none" />
+                <path d="M45 54 Q50 50 55 54" stroke="#ffffff" strokeWidth="5" strokeLinecap="round" />
+              </svg>
             </div>
             <span className="text-[13px] font-semibold tracking-tight text-[var(--color-foreground)] leading-none">
               FaceFit<span className="text-gradient-blue"> AI</span>
@@ -110,7 +120,7 @@ export default function Navbar() {
             </button>
 
             <a
-              href="https://github.com"
+              href="https://github.com/nguyenvandiennlu/FaceAI_Nhom22"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-xl text-[13px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-foreground)] hover:bg-white/[0.045] transition-all duration-200 box-border"

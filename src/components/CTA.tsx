@@ -41,7 +41,7 @@ export default function CTA() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/nguyenvandiennlu/FaceAI_Nhom22"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-ghost !py-3.5 !px-7 !text-[15px]"

@@ -1,10 +1,21 @@
 # 🕶️ FaceFit AI — Hệ Thống Gợi Ý Mắt Kính Thông Minh Bằng AI
+### Đồ Án Môn Học Máy Học - Nhóm 22 (Đại Học Nông Lâm TP.HCM)
 
 <div align="center">
-  <img src="public/icon.svg" alt="FaceFit AI Logo" width="120" height="120" />
+  <!-- Biometric Eyewear Logo SVG -->
+  <svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="background: #090d16; border-radius: 24px; padding: 15px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.25);">
+    <path d="M22 35 C20 38, 20 42, 20 50 C20 58, 20 62, 22 65" stroke="#818cf8" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+    <path d="M78 35 C80 38, 80 42, 80 50 C80 58, 80 62, 78 65" stroke="#818cf8" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+    <path d="M42 22 C45 20, 48 20, 50 20 C52 20, 55 20, 58 22" stroke="#818cf8" strokeWidth="6" strokeLinecap="round" opacity="0.6" />
+    <path d="M28 46 Q38 42 46 47" stroke="#22d3ee" strokeWidth="6.5" strokeLinecap="round" />
+    <path d="M72 46 Q62 42 54 47" stroke="#22d3ee" strokeWidth="6.5" strokeLinecap="round" />
+    <rect x="25" y="47" width="20" height="15" rx="5" stroke="#ffffff" strokeWidth="5.5" fill="none" />
+    <rect x="55" y="47" width="20" height="15" rx="5" stroke="#ffffff" strokeWidth="5.5" fill="none" />
+    <path d="M45 54 Q50 50 55 54" stroke="#ffffff" strokeWidth="5" strokeLinecap="round" />
+  </svg>
   
-  <p align="center">
-    <strong>Giải pháp nhận diện dáng khuôn mặt bằng Deep Learning và đề xuất gọng kính phù hợp theo tỷ lệ hình học.</strong>
+  <p align="center" style="margin-top: 15px;">
+    <strong>Hệ thống phân tích dáng khuôn mặt bằng học sâu (Deep Learning) và đề xuất/đeo thử kính ảo tương tác thời gian thực.</strong>
   </p>
 
   <p align="center">
@@ -14,13 +25,24 @@
     <img src="https://img.shields.io/badge/TensorFlow-2.21-orange?logo=tensorflow&style=flat-square" alt="TensorFlow" />
     <img src="https://img.shields.io/badge/OpenCV-4.11-red?logo=opencv&style=flat-square" alt="OpenCV" />
     <img src="https://img.shields.io/badge/Vite-8.x-purple?logo=vite&style=flat-square" alt="Vite" />
-    <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
   </p>
 </div>
 
 ---
 
 ## 📖 Giới thiệu dự án
+
+**FaceFit AI** là sản phẩm kết hợp giữa công nghệ Xử lý ảnh sinh trắc học và Trí tuệ nhân tạo để giải quyết nhu cầu lựa chọn mắt kính phù hợp với hình dáng khuôn mặt. 
+
+### Các tính năng cốt lõi nổi bật:
+* **Nhận diện khuôn mặt thời gian thực:** OpenCV Haar Cascade kiểm duyệt chất lượng hình ảnh đầu vào, tự động cắt ảnh căn giữa quai hàm.
+* **Đa dạng mô hình AI:** So sánh và tùy chọn phân tích dáng mặt qua 4 mô hình: SVM (HOG), CNN Custom, ResNet50 (Transfer Learning) và EfficientNetV2.
+* **Tia quét Laser Biometric:** Hiệu ứng camera quét sinh trắc học HUD + tia quét laser xanh ngọc chuyển động quét dọc bức ảnh cực kỳ sinh động khi đang xử lý phân tích.
+* **Virtual Try-On (Thử kính ảo tương tác):** Đeo thử các gọng kính SVG (Rectangle, Round, Wayfarer, Aviator...) trực tiếp trên ảnh chân dung bằng cơ chế kéo thả drag, thanh trượt phóng to/thu nhỏ (Scale) và xoay góc kính (Rotate) khớp với khuôn mặt.
+* **Hồ sơ phân tích chi tiết (Diagnostics Tab):**
+  * **Confusion Matrix Heatmap:** Ma trận nhầm lẫn 5x5 chuyển sắc trực quan.
+  * **ROC/AUC Curves:** Biểu đồ đường cong ROC 5 dáng mặt (đạt AUC trung bình 0.976).
+* **Xuất báo cáo PDF:** Nút bấm tự động tải báo cáo kết quả phân tích A4 định dạng chuyên nghiệp dạng thẻ chẩn đoán y tế.
 
 **FaceFit AI** là một ứng dụng web cao cấp giúp giải quyết vấn đề chọn kính phù hợp với khuôn mặt bằng trí tuệ nhân tạo. Hệ thống chụp/nhận ảnh trực diện của người dùng, tự động kiểm tra tính hợp lệ bằng bộ lọc phát hiện khuôn mặt (**OpenCV Haar Cascade**), chuẩn hóa tỷ lệ ảnh và cho phép người dùng tùy chọn 1 trong 4 mô hình học máy: **SVM (HOG), CNN Custom, ResNet50, EfficientNetV2** để chạy phân tích và dự đoán chính xác dáng mặt.
 
